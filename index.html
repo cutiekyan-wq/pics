@@ -151,11 +151,12 @@
       position: relative;
       width: min(100%, 260px);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       margin-top: 18px;
       min-height: 64px;
-      gap: 18px;
+      gap: 12px;
       z-index: 4;
       overflow: visible;
     }
@@ -766,6 +767,20 @@
       }).join('');
     }
 
+    function placeNoButtonUnderYes() {
+      const buttonWidth = noBtn.offsetWidth || 110;
+      const buttonHeight = noBtn.offsetHeight || 42;
+      const yesRect = yesBtn.getBoundingClientRect();
+      const maxX = Math.max(16, window.innerWidth - buttonWidth - 16);
+      const maxY = Math.max(16, window.innerHeight - buttonHeight - 16);
+      const nextX = Math.min(Math.max(16, yesRect.left + (yesRect.width - buttonWidth) / 2), maxX);
+      const nextY = Math.min(Math.max(16, yesRect.bottom + 12), maxY);
+
+      noBtn.style.left = `${nextX}px`;
+      noBtn.style.top = `${nextY}px`;
+      noBtn.style.transform = `scale(${noButtonScale})`;
+    }
+
     function moveNoButton() {
       const buttonWidth = noBtn.offsetWidth || 110;
       const buttonHeight = noBtn.offsetHeight || 42;
@@ -837,13 +852,13 @@
     });
 
     window.addEventListener('resize', () => {
-      if (noBtn.style.display !== 'none') moveNoButton();
+      if (noBtn.style.display !== 'none') placeNoButtonUnderYes();
     });
 
     createSparkles();
     preloadImages();
     buildCollage();
-    moveNoButton();
+    placeNoButtonUnderYes();
   </script>
 </body>
 </html>
