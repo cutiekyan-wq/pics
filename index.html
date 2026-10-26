@@ -222,15 +222,15 @@
       position: fixed;
       left: 50%;
       top: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%) scale(1);
       background: linear-gradient(135deg, var(--no), var(--no-dark));
       color: white;
       box-shadow: 0 12px 24px rgba(248, 113, 113, 0.30), inset 0 1px 0 rgba(255,255,255,0.35);
       transition: left 0.18s ease, top 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease;
       z-index: 30;
-      min-width: 120px;
-      min-height: 48px;
-      padding: 12px 24px;
+      min-width: 110px;
+      min-height: 46px;
+      padding: 12px 22px;
       font-size: 0.8rem;
     }
 
@@ -525,6 +525,8 @@
       loopId: null
     };
 
+    let noButtonScale = 1;
+
     function startLoveSong() {
       if (!loveSong) return;
       loveSong.volume = 0.5;
@@ -702,26 +704,31 @@
 
       noBtn.style.left = `${randomX}px`;
       noBtn.style.top = `${randomY}px`;
-      noBtn.style.transform = 'translate(0, 0)';
+      noBtn.style.transform = `scale(${noButtonScale})`;
+    }
+
+    function shrinkNoButton() {
+      noButtonScale = Math.max(0.38, noButtonScale * 0.82);
+      moveNoButton();
     }
 
     noBtn.addEventListener('pointerenter', () => {
       ensureAudio();
       playTone({ freq: 170, duration: 0.12, type: 'sawtooth', volume: 0.03, sweep: -90, attack: 0.008, decay: 0.12 });
-      moveNoButton();
+      shrinkNoButton();
     });
 
     noBtn.addEventListener('pointerdown', () => {
       ensureAudio();
       playTone({ freq: 150, duration: 0.15, type: 'square', volume: 0.025, sweep: -80, attack: 0.01, decay: 0.15 });
-      moveNoButton();
+      shrinkNoButton();
     });
 
     noBtn.addEventListener('touchstart', (event) => {
       event.preventDefault();
       ensureAudio();
       playTone({ freq: 150, duration: 0.15, type: 'square', volume: 0.025, sweep: -80, attack: 0.01, decay: 0.15 });
-      moveNoButton();
+      shrinkNoButton();
     }, { passive: false });
 
     yesBtn.addEventListener('click', () => {
