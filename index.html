@@ -3,23 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Mobile Photo Animation</title>
+  <title>Mobile Photo Gallery</title>
   <style>
     :root {
-      --bg: #08111f;
-      --card: rgba(255,255,255,0.08);
+      --bg1: #0b1220;
+      --bg2: #111827;
+      --panel-bg: rgba(255,255,255,0.08);
       --text: #f8fafc;
-      --muted: rgba(255,255,255,0.8);
+      --muted: rgba(255,255,255,0.82);
       --dot: rgba(255,255,255,0.45);
       --dot-active: #ffffff;
+      --button-bg: rgba(255,255,255,0.18);
+      --shadow: rgba(0,0,0,0.45);
+      --transition: 0.55s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
+      min-height: 100%;
       height: 100%;
-      background: radial-gradient(circle at top, #13233d, var(--bg) 60%);
+      background: radial-gradient(circle at top, #142845, var(--bg1) 48%, var(--bg2));
       font-family: Arial, Helvetica, sans-serif;
     }
 
@@ -33,48 +38,51 @@
       position: relative;
       width: min(92vw, 420px);
       aspect-ratio: 4 / 5;
-      overflow: hidden;
       border-radius: 26px;
+      overflow: hidden;
       background: #000;
-      box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+      box-shadow: 0 25px 65px var(--shadow);
       touch-action: pan-y;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      isolation: isolate;
     }
 
     .slides {
-      position: relative;
+      display: flex;
       width: 100%;
       height: 100%;
-      display: flex;
-      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+      transition: transform var(--transition);
+      transform: translate3d(0, 0, 0);
     }
 
     .slide {
       position: relative;
-      min-width: 100%;
+      flex: 0 0 100%;
       height: 100%;
       overflow: hidden;
       background: #111827;
     }
 
     .slide img {
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
       transform: scale(1.06);
       animation: zoom 6s ease-in-out infinite alternate;
-      filter: saturate(1.15) contrast(1.05);
+      filter: saturate(1.12) contrast(1.05);
+      background: #0f172a;
     }
 
-    .dark {
+    .shade {
       position: absolute;
       inset: 0;
       background: linear-gradient(
         to top,
-        rgba(0, 0, 0, 0.7) 0%,
-        rgba(0,0,0,0.18) 35%,
+        rgba(0,0,0,0.75) 0%,
+        rgba(0,0,0,0.20) 35%,
         rgba(0,0,0,0.08) 100%
       );
     }
@@ -86,30 +94,31 @@
       bottom: 20px;
       z-index: 2;
       color: var(--text);
+      pointer-events: none;
     }
 
     .tag {
       display: inline-block;
       padding: 6px 10px;
+      margin-bottom: 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.14);
       backdrop-filter: blur(8px);
       font-size: 11px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-bottom: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
     }
 
-    .title {
+    .content h2 {
       margin: 0;
-      font-size: clamp(1.3rem, 3vw, 2rem);
-      font-weight: 700;
+      font-size: clamp(1.35rem, 3vw, 2rem);
       line-height: 1.1;
+      font-weight: 700;
       text-shadow: 0 4px 18px rgba(0,0,0,0.5);
     }
 
-    .subtitle {
+    .content p {
       margin: 8px 0 0;
       font-size: 0.85rem;
       color: var(--muted);
@@ -125,13 +134,13 @@
       height: 42px;
       border: none;
       border-radius: 50%;
-      background: rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.16);
       color: white;
       font-size: 24px;
       cursor: pointer;
       backdrop-filter: blur(8px);
       -webkit-tap-highlight-color: transparent;
-      transition: transform 0.2s ease, background 0.2s ease;
+      transition: transform 0.18s ease, background 0.18s ease;
     }
 
     .nav-btn:active {
@@ -151,9 +160,9 @@
       bottom: 16px;
       transform: translateX(-50%);
       display: flex;
-      align-items: center;
       gap: 8px;
       z-index: 4;
+      align-items: center;
     }
 
     .dot {
@@ -163,16 +172,17 @@
       background: var(--dot);
       transition: all 0.25s ease;
       box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+      cursor: pointer;
     }
 
     .dot.active {
       width: 22px;
-      border-radius: 50px;
+      border-radius: 999px;
       background: var(--dot-active);
     }
 
     @keyframes zoom {
-      0% { transform: scale(1.06); }
+      0%   { transform: scale(1.06); }
       100% { transform: scale(1.18); }
     }
 
@@ -186,9 +196,12 @@
         right: 16px;
         bottom: 18px;
       }
+    }
 
-      .title {
-        font-size: 1.4rem;
+    @media (prefers-reduced-motion: reduce) {
+      .slides, .dot, .nav-btn, .slide img {
+        transition: none !important;
+        animation: none !important;
       }
     }
   </style>
@@ -198,186 +211,122 @@
     <button class="nav-btn prev" type="button" aria-label="Previous slide">&#10094;</button>
     <button class="nav-btn next" type="button" aria-label="Next slide">&#10095;</button>
 
-    <div class="slides" id="slides">
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_1025EE72-0018-46D6-BD02-2FC395C3A0DC.png" alt="Photo 1">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 1</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_47F44A8D-59E8-47D5-A5FC-A5EFB5AFA665.png" alt="Photo 2">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 2</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_650F51BD-7C14-4D21-ACCC-C2C24B0A0D22.png" alt="Photo 3">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 3</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_7EC56514-F4C7-4C1C-9C75-DCCF43DBB28D.png" alt="Photo 4">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 4</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_8156417C-996F-410B-8FC0-C9D8B77C9616.png" alt="Photo 5">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 5</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_890B36E7-4CC2-471B-8830-E41C24501460.png" alt="Photo 6">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 6</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_A1CDCD72-DCAC-4081-91BE-5E31A524A5A8.png" alt="Photo 7">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 7</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_AA2718BD-1545-41AB-BF5F-892361F24BEA.png" alt="Photo 8">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 8</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-
-      <div class="slide">
-        <img src="https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_BA30A766-76FC-4097-9DF1-306B222FA299.png" alt="Photo 9">
-        <div class="dark"></div>
-        <div class="content">
-          <span class="tag">Moments</span>
-          <h2 class="title">Photo 9</h2>
-          <p class="subtitle">A beautiful memory</p>
-        </div>
-      </div>
-    </div>
-
+    <div class="slides" id="slides"></div>
     <div class="dots" id="dots" aria-label="Slide indicators"></div>
   </div>
 
   <script>
-    const slides = document.getElementById("slides");
-    const slideItems = Array.from(slides.children);
-    const dotsContainer = document.getElementById("dots");
-    const prevBtn = document.querySelector(".prev");
-    const nextBtn = document.querySelector(".next");
+    const galleryItems = [
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_1025EE72-0018-46D6-BD02-2FC395C3A0DC.png', tag: 'Moments', title: 'Photo 1', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_47F44A8D-59E8-47D5-A5FC-A5EFB5AFA665.png', tag: 'Moments', title: 'Photo 2', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_650F51BD-7C14-4D21-ACCC-C2C24B0A0D22.png', tag: 'Moments', title: 'Photo 3', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_7EC56514-F4C7-4C1C-9C75-DCCF43DBB28D.png', tag: 'Moments', title: 'Photo 4', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_8156417C-996F-410B-8FC0-C9D8B77C9616.png', tag: 'Moments', title: 'Photo 5', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_890B36E7-4CC2-471B-8830-E41C24501460.png', tag: 'Moments', title: 'Photo 6', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_A1CDCD72-DCAC-4081-91BE-5E31A524A5A8.png', tag: 'Moments', title: 'Photo 7', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_AA2718BD-1545-41AB-BF5F-892361F24BEA.png', tag: 'Moments', title: 'Photo 8', subtitle: 'A beautiful memory' },
+      { image: 'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_BA30A766-76FC-4097-9DF1-306B222FA299.png', tag: 'Moments', title: 'Photo 9', subtitle: 'A beautiful memory' }
+    ];
+
+    const slidesEl = document.getElementById('slides');
+    const dotsEl = document.getElementById('dots');
+    const prevBtn = document.querySelector('.prev');
+    const nextBtn = document.querySelector('.next');
+    const galleryEl = document.querySelector('.gallery');
 
     let currentIndex = 0;
     let autoplayId = null;
+    let touchStartX = 0;
 
-    function buildDots() {
-      slideItems.forEach((_, index) => {
-        const dot = document.createElement("span");
-        dot.className = "dot" + (index === 0 ? " active" : "");
-        dot.setAttribute("aria-label", "Go to slide " + (index + 1));
-        dot.addEventListener("click", () => {
-          currentIndex = index;
-          updateSlider();
-          restartAutoplay();
-        });
-        dotsContainer.appendChild(dot);
+    function preloadImages() {
+      galleryItems.forEach(({ image }) => {
+        const img = new Image();
+        img.src = image;
       });
     }
 
-    function updateSlider() {
-      slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+    function renderSlides() {
+      slidesEl.innerHTML = galleryItems.map(({ image, title, subtitle, tag }, index) => `
+        <div class="slide" aria-label="Slide ${index + 1}">
+          <img src="${image}" alt="${title}" loading="${index === 0 ? 'eager' : 'lazy'}" />
+          <div class="shade"></div>
+          <div class="content">
+            <span class="tag">${tag}</span>
+            <h2>${title}</h2>
+            <p>${subtitle}</p>
+          </div>
+        </div>
+      `).join('');
 
-      Array.from(dotsContainer.children).forEach((dot, index) => {
-        dot.classList.toggle("active", index === currentIndex);
+      dotsEl.innerHTML = galleryItems.map((_, index) => `
+        <span class="dot ${index === 0 ? 'active' : ''}" data-index="${index}" aria-label="Go to slide ${index + 1}"></span>
+      `).join('');
+
+      dotsEl.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          currentIndex = Number(dot.dataset.index);
+          updateGallery();
+          restartAutoplay();
+        });
+      });
+    }
+
+    function updateGallery() {
+      slidesEl.style.transform = `translate3d(-${currentIndex * 100}%, 0, 0)`;
+      dotsEl.querySelectorAll('.dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentIndex);
       });
     }
 
     function nextSlide() {
-      currentIndex = (currentIndex + 1) % slideItems.length;
-      updateSlider();
+      currentIndex = (currentIndex + 1) % galleryItems.length;
+      updateGallery();
     }
 
     function prevSlide() {
-      currentIndex = (currentIndex - 1 + slideItems.length) % slideItems.length;
-      updateSlider();
+      currentIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
+      updateGallery();
     }
 
     function startAutoplay() {
       clearInterval(autoplayId);
-      autoplayId = setInterval(() => {
-        nextSlide();
-      }, 3500);
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reducedMotion) return;
+      autoplayId = setInterval(nextSlide, 3500);
     }
 
     function restartAutoplay() {
       startAutoplay();
     }
 
-    prevBtn.addEventListener("click", () => {
+    prevBtn.addEventListener('click', () => {
       prevSlide();
       restartAutoplay();
     });
 
-    nextBtn.addEventListener("click", () => {
+    nextBtn.addEventListener('click', () => {
       nextSlide();
       restartAutoplay();
     });
 
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    const gallery = document.querySelector(".gallery");
-
-    gallery.addEventListener("touchstart", (e) => {
-      touchStartX = e.changedTouches[0].screenX;
+    galleryEl.addEventListener('touchstart', (event) => {
+      touchStartX = event.changedTouches[0].screenX;
     }, { passive: true });
 
-    gallery.addEventListener("touchend", (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
+    galleryEl.addEventListener('touchend', (event) => {
+      const touchEndX = event.changedTouches[0].screenX;
+      const delta = touchStartX - touchEndX;
 
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) nextSlide();
+      if (Math.abs(delta) > 40) {
+        if (delta > 0) nextSlide();
         else prevSlide();
         restartAutoplay();
       }
     }, { passive: true });
 
-    buildDots();
-    updateSlider();
+    renderSlides();
+    updateGallery();
+    preloadImages();
     startAutoplay();
   </script>
 </body>
