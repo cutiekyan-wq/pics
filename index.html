@@ -490,6 +490,8 @@
     </div>
   </div>
 
+  <audio id="loveSong" src="song.mp3" preload="auto" loop></audio>
+
   <script>
     const images = [
       'https://raw.githubusercontent.com/cutiekyan-wq/pics/main/Messenger_creation_1025EE72-0018-46D6-BD02-2FC395C3A0DC.png',
@@ -509,12 +511,20 @@
     const noBtn = document.querySelector('.no-btn');
     const choiceRow = document.querySelector('.choice-row');
     const sparkles = document.querySelector('.sparkles');
+    const loveSong = document.getElementById('loveSong');
 
     const audioState = {
       context: null,
       master: null,
       loopId: null
     };
+
+    function startLoveSong() {
+      if (!loveSong) return;
+      loveSong.volume = 0.5;
+      loveSong.currentTime = 0;
+      loveSong.play().catch(() => {});
+    }
 
     function createSparkles() {
       const fragment = document.createDocumentFragment();
@@ -708,6 +718,7 @@
 
     yesBtn.addEventListener('click', () => {
       ensureAudio();
+      startLoveSong();
       const buttonRect = yesBtn.getBoundingClientRect();
       const burstX = buttonRect.left + buttonRect.width / 2;
       const burstY = buttonRect.top + buttonRect.height / 2;
