@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mobile Photo Animation</title>
+  <style>
+    :root {
+      --bg: #08111f;
+      --card: rgba(255,255,255,0.08);
+      --text: #f8fafc;
+      --muted: rgba(255,255,255,0.8);
+      --dot: rgba(255,255,255,0.45);
+      --dot-active: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: radial-gradient(circle at top, #13233d, var(--bg) 60%);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .gallery {
+      position: relative;
+      width: min(92vw, 420px);
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: 26px;
+      background: #000;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .slides {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .slide {
+      position: relative;
+      min-width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #111827;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scale(1.06);
+      animation: zoom 6s ease-in-out infinite alternate;
+      filter: saturate(1.15) contrast(1.05);
+    }
+
+    .dark {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.7) 0%,
+        rgba(0,0,0,0.18) 35%,
+        rgba(0,0,0,0.08) 100%
+      );
+    }
+
+    .content {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 20px;
+      z-index: 2;
+      color: var(--text);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      backdrop-filter: blur(8px);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.5);
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+    }
+
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .nav-btn:active {
+      transform: translateY(-50%) scale(0.96);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.24);
+    }
+
+    .prev { left: 12px; }
+    .next { right: 12px; }
+
+    .dots {
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 4;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--dot);
+      transition: all 0.25s ease;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    .dot.active {
+      width: 22px;
+      border-radius: 50px;
+      background: var(--dot-active);
+    }
+
+    @keyframes zoom {
+      0% { transform: scale(1.06); }
+      100% { transform: scale(1.18); }
+    }
+
+    @media (max-width: 420px) {
+      .gallery {
+        border-radius: 22px;
+      }
+
+      .content {
+        left: 16px;
+        right: 16px;
+        bottom: 18px;
+      }
+
+      .title {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="gallery" aria-label="Photo gallery">
+    <button class="nav-btn prev" type="button" aria-label="Previous slide">&#10094;</button>
+    <button class="nav-btn next" type="button" aria-label="Next slide">&#10095;</button>
+
+    <div class="slides" id="slides">
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80" alt="Forest">
+        <div class="dark"></div>
+        <div class="content">
+          <span class="tag">Nature</span>
+          <h2 class="title">Forest Morning</h2>
+          <p class="subtitle">Fresh air and soft light</p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1200&q=80" alt="Mountain">
+        <div class="dark"></div>
+        <div class="content">
+          <span class="tag">Travel</span>
+          <h2 class="title">Mountain Escape</h2>
+          <p class="subtitle">High peaks and calm skies</p>
+        </div>
+      </div>
+
+      <div class="slide">
+        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80" alt="Beach">
+        <div class="dark"></div>
+        <div class="content">
+          <span class="tag">Ocean</span>
+          <h2 class="title">Golden Shore</h2>
+          <p class="subtitle">Sunset by the water</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dots" id="dots" aria-label="Slide indicators"></div>
+  </div>
+
+  <script>
+    const slides = document.getElementById("slides");
+    const slideItems = Array.from(slides.children);
+    const dotsContainer = document.getElementById("dots");
+    const prevBtn = document.querySelector(".prev");
+    const nextBtn = document.querySelector(".next");
+
+    let currentIndex = 0;
+    let autoplayId = null;
+
+    function buildDots() {
+      slideItems.forEach((_, index) => {
+        const dot = document.createElement("span");
+        dot.className = "dot" + (index === 0 ? " active" : "");
+        dot.setAttribute("aria-label", "Go to slide " + (index + 1));
+        dot.addEventListener("click", () => {
+          currentIndex = index;
+          updateSlider();
+          restartAutoplay();
+        });
+        dotsContainer.appendChild(dot);
+      });
+    }
+
+    function updateSlider() {
+      slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+      Array.from(dotsContainer.children).forEach((dot, index) => {
+        dot.classList.toggle("active", index === currentIndex);
+      });
+    }
+
+    function nextSlide() {
+      currentIndex = (currentIndex + 1) % slideItems.length;
+      updateSlider();
+    }
+
+    function prevSlide() {
+      currentIndex = (currentIndex - 1 + slideItems.length) % slideItems.length;
+      updateSlider();
+    }
+
+    function startAutoplay() {
+      clearInterval(autoplayId);
+      autoplayId = setInterval(() => {
+        nextSlide();
+      }, 3500);
+    }
+
+    function restartAutoplay() {
+      startAutoplay();
+    }
+
+    prevBtn.addEventListener("click", () => {
+      prevSlide();
+      restartAutoplay();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      nextSlide();
+      restartAutoplay();
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const gallery = document.querySelector(".gallery");
+
+    gallery.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    gallery.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) nextSlide();
+        else prevSlide();
+        restartAutoplay();
+      }
+    }, { passive: true });
+
+    buildDots();
+    updateSlider();
+    startAutoplay();
+  </script>
+</body>
+</html>
