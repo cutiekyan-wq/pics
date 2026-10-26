@@ -19,6 +19,10 @@
       --accent3: #ff4d8d;
       --button: #ffffff;
       --button-text: #111827;
+      --yes: #34d399;
+      --yes-dark: #16a34a;
+      --no: #f87171;
+      --no-dark: #dc2626;
     }
 
     * { box-sizing: border-box; }
@@ -40,13 +44,13 @@
     .gallery-wrap {
       position: relative;
       width: min(92vw, 420px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .surprise-banner {
-      position: absolute;
-      top: -18px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: relative;
       z-index: 11;
       display: inline-flex;
       align-items: center;
@@ -71,24 +75,49 @@
       font-size: 1rem;
     }
 
-    .surprise-btn {
-      position: absolute;
-      left: 50%;
-      top: 38px;
-      transform: translateX(-50%);
-      z-index: 12;
+    .choice-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      margin-top: 18px;
+      height: 52px;
+    }
+
+    .choice-btn {
       border: none;
       border-radius: 999px;
-      background: linear-gradient(135deg, #ffffff, #f8fafc);
-      color: var(--button-text);
-      font-weight: 700;
-      font-size: 0.8rem;
+      font-weight: 800;
       letter-spacing: 0.04em;
-      padding: 10px 18px;
-      box-shadow: 0 10px 22px rgba(255,255,255,0.25);
+      padding: 12px 22px;
+      font-size: 0.8rem;
       cursor: pointer;
-      animation: btnGlow 1.8s ease-in-out infinite;
+      user-select: none;
       -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .choice-btn:active {
+      transform: scale(0.97);
+    }
+
+    .yes-btn {
+      background: linear-gradient(135deg, var(--yes), var(--yes-dark));
+      color: white;
+      box-shadow: 0 10px 22px rgba(52, 211, 153, 0.35);
+    }
+
+    .no-btn {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, var(--no), var(--no-dark));
+      color: white;
+      box-shadow: 0 10px 22px rgba(248, 113, 113, 0.33);
+      transition: left 0.18s ease, top 0.18s ease, transform 0.18s ease;
     }
 
     .gallery {
@@ -103,7 +132,17 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
       isolation: isolate;
-      margin-top: 56px;
+      margin-top: 18px;
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+      pointer-events: none;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .gallery.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
     }
 
     .slides {
@@ -244,11 +283,6 @@
       50% { transform: translateX(-50%) scale(1.05); }
     }
 
-    @keyframes btnGlow {
-      0%, 100% { box-shadow: 0 10px 22px rgba(255,255,255,0.25); }
-      50% { box-shadow: 0 12px 28px rgba(255,170,0,0.4); }
-    }
-
     @keyframes floatIn {
       0% { opacity: 0; transform: translateX(-50%) translateY(-12px); }
       100% { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -262,7 +296,6 @@
     @media (max-width: 420px) {
       .gallery {
         border-radius: 22px;
-        margin-top: 52px;
       }
 
       .content {
@@ -276,15 +309,18 @@
         padding: 10px 15px;
       }
 
-      .surprise-btn {
-        top: 34px;
-        font-size: 0.72rem;
-        padding: 9px 14px;
+      .choice-row {
+        gap: 12px;
+      }
+
+      .choice-btn {
+        padding: 10px 18px;
+        font-size: 0.74rem;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .slides, .dot, .nav-btn, .slide img, .surprise-banner, .surprise-btn {
+      .slides, .dot, .nav-btn, .slide img, .surprise-banner, .choice-btn, .gallery {
         transition: none !important;
         animation: none !important;
       }
@@ -294,7 +330,11 @@
 <body>
   <div class="gallery-wrap">
     <div class="surprise-banner">Would you like to see a surprise?</div>
-    <button class="surprise-btn" type="button">Tap for surprise</button>
+
+    <div class="choice-row">
+      <button class="choice-btn yes-btn" type="button">Yes</button>
+      <button class="choice-btn no-btn" type="button">No</button>
+    </div>
 
     <div class="gallery" aria-label="Photo gallery">
       <button class="nav-btn prev" type="button" aria-label="Previous slide">&#10094;</button>
@@ -323,11 +363,30 @@
     const prevBtn = document.querySelector('.prev');
     const nextBtn = document.querySelector('.next');
     const galleryEl = document.querySelector('.gallery');
-    const surpriseBtn = document.querySelector('.surprise-btn');
+    const yesBtn = document.querySelector('.yes-btn');
+    const noBtn = document.querySelector('.no-btn');
+    const choiceRow = document.querySelector('.choice-row');
 
     let currentIndex = 0;
     let autoplayId = null;
     let touchStartX = 0;
+    let revealed = false;
+
+    function randomBetween(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function moveNoButton() {
+      const rowBounds = choiceRow.getBoundingClientRect();
+      const maxX = Math.max(0, rowBounds.width - 90);
+      const maxY = Math.max(0, rowBounds.height - 30);
+      const x = randomBetween(0, maxX);
+      const y = randomBetween(0, maxY);
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y + 26}px`;
+      noBtn.style.transform = 'translateY(0)';
+    }
 
     function preloadImages() {
       galleryItems.forEach(({ image }) => {
@@ -382,7 +441,7 @@
     function startAutoplay() {
       clearInterval(autoplayId);
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (reducedMotion) return;
+      if (reducedMotion || !revealed) return;
       autoplayId = setInterval(nextSlide, 3500);
     }
 
@@ -401,10 +460,12 @@
     });
 
     galleryEl.addEventListener('touchstart', (event) => {
+      if (!revealed) return;
       touchStartX = event.changedTouches[0].screenX;
     }, { passive: true });
 
     galleryEl.addEventListener('touchend', (event) => {
+      if (!revealed) return;
       const touchEndX = event.changedTouches[0].screenX;
       const delta = touchStartX - touchEndX;
 
@@ -415,21 +476,29 @@
       }
     }, { passive: true });
 
-    surpriseBtn.addEventListener('click', () => {
-      surpriseBtn.textContent = 'Surprise unlocked ✨';
-      surpriseBtn.style.background = 'linear-gradient(135deg, #ffe29a, #ffb703)';
-      surpriseBtn.style.transform = 'translateX(-50%) scale(1.05)';
-      setTimeout(() => {
-        surpriseBtn.textContent = 'Tap for surprise';
-        surpriseBtn.style.background = 'linear-gradient(135deg, #ffffff, #f8fafc)';
-        surpriseBtn.style.transform = 'translateX(-50%) scale(1)';
-      }, 1800);
+    noBtn.addEventListener('pointerenter', moveNoButton);
+    noBtn.addEventListener('pointerdown', moveNoButton);
+    noBtn.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+
+    yesBtn.addEventListener('click', () => {
+      revealed = true;
+      galleryEl.classList.add('visible');
+      choiceRow.style.display = 'none';
+      yesBtn.style.display = 'none';
+      noBtn.style.display = 'none';
+      startAutoplay();
     });
 
+    window.addEventListener('resize', moveNoButton);
     renderSlides();
     updateGallery();
     preloadImages();
-    startAutoplay();
+    noBtn.style.left = '20px';
+    noBtn.style.top = '50%';
+    moveNoButton();
   </script>
 </body>
 </html>
