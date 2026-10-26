@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Enchanted Memory Reveal</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&display=swap');
+
     :root {
       --bg1: #090b1a;
       --bg2: #1a1233;
@@ -368,6 +370,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.7s ease, transform 0.7s ease;
+      font-family: 'Cormorant Garamond', Georgia, serif;
     }
 
     .gallery.visible .letter-card {
@@ -382,22 +385,28 @@
       margin-bottom: 8px;
       color: #d9617a;
       filter: drop-shadow(0 4px 8px rgba(217, 97, 122, 0.25));
+      font-family: Arial, sans-serif;
     }
 
     .letter-title {
       margin: 0 0 8px;
-      font-size: clamp(1rem, 2.8vw, 1.35rem);
-      font-weight: 900;
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      font-weight: 700;
       letter-spacing: 0.04em;
       color: #6d2c3b;
+      line-height: 1.1;
+      font-family: 'Great Vibes', 'Brush Script MT', cursive;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.36);
     }
 
     .letter-text {
       margin: 0;
-      font-size: 0.76rem;
+      font-size: 1.05rem;
       line-height: 1.7;
       color: #5f2a3d;
-      font-weight: 700;
+      font-weight: 600;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      letter-spacing: 0.02em;
     }
 
     @keyframes pulse {
