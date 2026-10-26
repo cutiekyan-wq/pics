@@ -62,7 +62,7 @@
         radial-gradient(circle at 20% 25%, rgba(255,255,255,0.8) 0 1.4px, transparent 2px),
         radial-gradient(circle at 68% 18%, rgba(255,255,255,0.7) 0 1.3px, transparent 2px),
         radial-gradient(circle at 82% 62%, rgba(255,255,255,0.9) 0 1.5px, transparent 2px),
-        radial-gradient(circle at 30% 82%, rgba(255,255,255,0.75) 0 1.4px, transparent 2px),
+        radial-gradient(circle at 30% 80%, rgba(255,255,255,0.75) 0 1.4px, transparent 2px),
         radial-gradient(circle at 60% 40%, rgba(255,255,255,0.8) 0 1.2px, transparent 2px),
         radial-gradient(circle at 47% 72%, rgba(255,255,255,0.7) 0 1.3px, transparent 2px);
       animation: drift 18s linear infinite;
@@ -349,6 +349,95 @@
     const noBtn = document.querySelector('.no-btn');
     const choiceRow = document.querySelector('.choice-row');
 
+    const audioState = {
+      context: null,
+      master: null,
+      loopId: null
+    };
+
+    function ensureAudio() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null;
+      if (!audioState.context) {
+        audioState.context = new AudioCtx();
+        audioState.master = audioState.context.createGain();
+        audioState.master.gain.value = 0.18;
+        audioState.master.connect(audioState.context.destination);
+      }
+      if (audioState.context.state === 'suspended') {
+        audioState.context.resume();
+      }
+      return audioState.context;
+    }
+
+    function playTone({ freq = 440, duration = 0.45, type = 'sine', volume = 0.05, start = 0, sweep = 0, attack = 0.01, decay = 0.2 }) {
+      const ctx = ensureAudio();
+      if (!ctx || !audioState.master) return;
+
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const now = ctx.currentTime + start;
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(freq, now);
+      if (sweep !== 0) {
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(40, freq + sweep), now + duration);
+      }
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + attack);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration + decay);
+
+      oscillator.connect(gain);
+      gain.connect(audioState.master);
+
+      oscillator.start(now);
+      oscillator.stop(now + duration + decay + 0.05);
+    }
+
+    function playMagicSequence(notes, delay = 180) {
+      notes.forEach((note, index) => {
+        setTimeout(() => {
+          playTone({
+            freq: note,
+            duration: 0.42,
+            type: 'triangle',
+            volume: 0.05,
+            sweep: 70,
+            attack: 0.02,
+            decay: 0.28
+          });
+        }, index * delay);
+      });
+    }
+
+    function startFantasyMusic() {
+      const ctx = ensureAudio();
+      if (!ctx || audioState.loopId) return;
+
+      const melody = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 392.00, 523.25, 659.25];
+      let step = 0;
+
+      audioState.loopId = setInterval(() => {
+        const freq = melody[step % melody.length];
+        playTone({ freq, duration: 0.8, type: 'triangle', volume: 0.04, sweep: 80, attack: 0.02, decay: 0.35 });
+        playTone({ freq: freq / 2, duration: 0.9, type: 'sine', volume: 0.018, sweep: 40, attack: 0.02, decay: 0.42 });
+
+        if (step % 3 === 0) {
+          playTone({ freq: freq * 2, duration: 0.55, type: 'sine', volume: 0.018, sweep: 80, attack: 0.01, decay: 0.22 });
+        }
+
+        step += 1;
+      }, 520);
+    }
+
+    function stopFantasyMusic() {
+      if (audioState.loopId) {
+        clearInterval(audioState.loopId);
+        audioState.loopId = null;
+      }
+    }
+
     function preloadImages() {
       images.forEach(src => {
         const img = new Image();
@@ -375,15 +464,36 @@
       noBtn.style.transform = 'translateY(0)';
     }
 
-    noBtn.addEventListener('pointerenter', moveNoButton);
-    noBtn.addEventListener('pointerdown', moveNoButton);
-    noBtn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
+    noBtn.addEventListener('pointerenter', () => {
+      ensureAudio();
+      playTone({ freq: 170, duration: 0.12, type: 'sawtooth', volume: 0.03, sweep: -90, attack: 0.008, decay: 0.12 });
+      moveNoButton();
+    });
+
+    noBtn.addEventListener('pointerdown', () => {
+      ensureAudio();
+      playTone({ freq: 150, duration: 0.15, type: 'square', volume: 0.025, sweep: -80, attack: 0.01, decay: 0.15 });
+      moveNoButton();
+    });
+
+    noBtn.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      ensureAudio();
+      playTone({ freq: 150, duration: 0.15, type: 'square', volume: 0.025, sweep: -80, attack: 0.01, decay: 0.15 });
       moveNoButton();
     }, { passive: false });
 
     yesBtn.addEventListener('click', () => {
-      gallery.classList.add('visible');
+      ensureAudio();
+      playMagicSequence([392, 523.25, 659.25, 783.99], 160);
+      playTone({ freq: 220, duration: 0.8, type: 'triangle', volume: 0.06, sweep: 160, attack: 0.02, decay: 0.5 });
+      playTone({ freq: 330, duration: 0.9, type: 'sine', volume: 0.04, sweep: 180, attack: 0.01, decay: 0.7 });
+      startFantasyMusic();
+
+      setTimeout(() => {
+        gallery.classList.add('visible');
+      }, 250);
+
       choiceRow.style.display = 'none';
       yesBtn.style.display = 'none';
       noBtn.style.display = 'none';
