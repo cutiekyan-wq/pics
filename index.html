@@ -16,6 +16,9 @@
       --button-bg: rgba(255,255,255,0.18);
       --shadow: rgba(0,0,0,0.45);
       --transition: 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      --accent: #ffb703;
+      --accent2: #ff7b00;
+      --accent3: #ff4d8d;
     }
 
     * { box-sizing: border-box; }
@@ -34,6 +37,39 @@
       overflow: hidden;
     }
 
+    .gallery-wrap {
+      position: relative;
+      width: min(92vw, 420px);
+    }
+
+    .surprise-banner {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,183,3,0.95), rgba(255,123,0,0.9), rgba(255,77,141,0.9));
+      color: white;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 10px 30px rgba(255,123,0,0.35);
+      animation: bannerPulse 1.8s ease-in-out infinite, floatIn 0.8s ease-out;
+      white-space: nowrap;
+    }
+
+    .surprise-banner::before {
+      content: "✨";
+      font-size: 1rem;
+      animation: sparkle 1.4s ease-in-out infinite alternate;
+    }
+
     .gallery {
       position: relative;
       width: min(92vw, 420px);
@@ -46,6 +82,7 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
       isolation: isolate;
+      margin-top: 28px;
     }
 
     .slides {
@@ -186,6 +223,21 @@
       100% { transform: scale(1.18); }
     }
 
+    @keyframes bannerPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.05); }
+    }
+
+    @keyframes floatIn {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @keyframes sparkle {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.25) rotate(10deg); }
+    }
+
     @media (max-width: 420px) {
       .gallery {
         border-radius: 22px;
@@ -196,10 +248,15 @@
         right: 16px;
         bottom: 18px;
       }
+
+      .surprise-banner {
+        font-size: 0.68rem;
+        padding: 9px 14px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .slides, .dot, .nav-btn, .slide img {
+      .slides, .dot, .nav-btn, .slide img, .surprise-banner {
         transition: none !important;
         animation: none !important;
       }
@@ -207,12 +264,16 @@
   </style>
 </head>
 <body>
-  <div class="gallery" aria-label="Photo gallery">
-    <button class="nav-btn prev" type="button" aria-label="Previous slide">&#10094;</button>
-    <button class="nav-btn next" type="button" aria-label="Next slide">&#10095;</button>
+  <div class="gallery-wrap">
+    <div class="surprise-banner">Would you like to see a surprise?</div>
 
-    <div class="slides" id="slides"></div>
-    <div class="dots" id="dots" aria-label="Slide indicators"></div>
+    <div class="gallery" aria-label="Photo gallery">
+      <button class="nav-btn prev" type="button" aria-label="Previous slide">&#10094;</button>
+      <button class="nav-btn next" type="button" aria-label="Next slide">&#10095;</button>
+
+      <div class="slides" id="slides"></div>
+      <div class="dots" id="dots" aria-label="Slide indicators"></div>
+    </div>
   </div>
 
   <script>
