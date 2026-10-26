@@ -371,6 +371,9 @@
     let autoplayId = null;
     let touchStartX = 0;
     let revealed = false;
+    let audioCtx = null;
+    let masterGain = null;
+    let melodyInterval = null;
 
     function randomBetween(min, max) {
       return Math.random() * (max - min) + min;
@@ -386,6 +389,63 @@
       noBtn.style.left = `${x}px`;
       noBtn.style.top = `${y + 26}px`;
       noBtn.style.transform = 'translateY(0)';
+    }
+
+    function initMusic() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      if (!audioCtx) {
+        audioCtx = new AudioCtx();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.045;
+        masterGain.connect(audioCtx.destination);
+      }
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (melodyInterval) return;
+
+      const notes = [261.63, 329.63, 392.00, 329.63, 440.00, 392.00, 329.63, 293.66];
+      let step = 0;
+
+      melodyInterval = setInterval(() => {
+        if (!audioCtx || !masterGain) return;
+        const now = audioCtx.currentTime;
+        const freq = notes[step % notes.length];
+
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        const gain2 = audioCtx.createGain();
+
+        osc1.type = 'sine';
+        osc2.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, now);
+        osc2.frequency.setValueAtTime(freq / 2, now);
+
+        gain1.gain.setValueAtTime(0.0001, now);
+        gain1.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+
+        gain2.gain.setValueAtTime(0.0001, now);
+        gain2.gain.exponentialRampToValueAtTime(0.02, now + 0.03);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        gain1.connect(masterGain);
+        gain2.connect(masterGain);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.55);
+        osc2.stop(now + 0.85);
+
+        step += 1;
+      }, 480);
     }
 
     function preloadImages() {
@@ -485,6 +545,7 @@
 
     yesBtn.addEventListener('click', () => {
       revealed = true;
+      initMusic();
       galleryEl.classList.add('visible');
       choiceRow.style.display = 'none';
       yesBtn.style.display = 'none';
