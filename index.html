@@ -101,6 +101,25 @@
       animation: twinkle 3.8s ease-in-out infinite alternate;
     }
 
+    .floating-emoji-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .floating-emoji {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      font-size: clamp(1.4rem, 3vw, 2.6rem);
+      filter: drop-shadow(0 5px 10px rgba(255, 150, 180, 0.55));
+      animation: floatEmoji 8s ease-in-out infinite alternate;
+      opacity: 0.9;
+      user-select: none;
+    }
+
     .burst {
       position: absolute;
       width: 8px;
@@ -493,6 +512,29 @@
       }
     }
 
+    @keyframes floatEmoji {
+      0% {
+        transform: translate3d(0, 0, 0) scale(0.9) rotate(0deg);
+        opacity: 0.3;
+      }
+      25% {
+        transform: translate3d(25px, -22px, 0) scale(1.1) rotate(14deg);
+        opacity: 0.9;
+      }
+      50% {
+        transform: translate3d(-18px, -38px, 0) scale(1.25) rotate(-12deg);
+        opacity: 1;
+      }
+      75% {
+        transform: translate3d(30px, -62px, 0) scale(1.1) rotate(18deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translate3d(-15px, -90px, 0) scale(0.9) rotate(-18deg);
+        opacity: 0.2;
+      }
+    }
+
     @keyframes shimmer {
       0%, 100% { opacity: 0; transform: rotate(18deg) scale(1.2); }
       30% { opacity: 0.28; }
@@ -529,6 +571,7 @@
 </head>
 <body>
   <div class="sparkles" aria-hidden="true"></div>
+  <div class="floating-emoji-layer" id="floatingEmojiLayer" aria-hidden="true"></div>
 
   <div class="app">
     <div class="banner">Would you like to see a surprise?</div>
@@ -568,6 +611,7 @@
     const noBtn = document.querySelector('.no-btn');
     const choiceRow = document.querySelector('.choice-row');
     const sparkles = document.querySelector('.sparkles');
+    const floatingEmojiLayer = document.getElementById('floatingEmojiLayer');
     const loveSong = document.getElementById('loveSong');
 
     const audioState = {
@@ -619,6 +663,27 @@
         fragment.appendChild(dot);
       }
       sparkles.appendChild(fragment);
+    }
+
+    function createFloatingEmojis() {
+      for (let i = 0; i < 12; i += 1) {
+        const emoji = document.createElement('div');
+        emoji.className = 'floating-emoji';
+        emoji.textContent = '😍';
+
+        const startX = 8 + Math.random() * 84;
+        const startY = 16 + Math.random() * 68;
+        const size = 18 + Math.random() * 26;
+        const duration = 6 + Math.random() * 7;
+        const delay = Math.random() * 5;
+
+        emoji.style.left = `${startX}%`;
+        emoji.style.top = `${startY}%`;
+        emoji.style.fontSize = `${size}px`;
+        emoji.style.animationDuration = `${duration}s`;
+        emoji.style.animationDelay = `${delay}s`;
+        floatingEmojiLayer.appendChild(emoji);
+      }
     }
 
     function createBurst(x, y) {
@@ -856,6 +921,7 @@
     });
 
     createSparkles();
+    createFloatingEmojis();
     preloadImages();
     buildCollage();
     placeNoButtonUnderYes();
