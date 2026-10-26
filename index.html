@@ -305,6 +305,7 @@
       background: #1a1a2d;
       animation: popIn 0.65s ease both;
       transform-origin: center;
+      isolation: isolate;
     }
 
     .tile::before {
@@ -332,12 +333,15 @@
       display: block;
       object-fit: cover;
       filter: saturate(1.22) contrast(1.08) brightness(0.9) sepia(0.08) hue-rotate(6deg);
-      transform: scale(1.05);
-      transition: transform 0.5s ease, filter 0.5s ease;
+      transform: scale(1.08) translate3d(var(--float-x, 0px), var(--float-y, 0px), 0) rotate(var(--float-rot, 0deg));
+      transform-origin: center;
+      transition: filter 0.5s ease, opacity 0.5s ease;
+      animation: photoFloat var(--float-duration, 9s) ease-in-out infinite alternate;
+      animation-delay: var(--float-delay, 0s);
+      will-change: transform, filter;
     }
 
     .tile:hover img {
-      transform: scale(1.12);
       filter: saturate(1.45) contrast(1.12) brightness(1) sepia(0.08) hue-rotate(6deg);
     }
 
@@ -436,6 +440,18 @@
     @keyframes popIn {
       0% { opacity: 0; transform: scale(0.9) translateY(12px); }
       100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes photoFloat {
+      0% {
+        transform: scale(1.06) translate3d(var(--float-x, 0px), var(--float-y, 0px), 0) rotate(calc(var(--float-rot, 0deg) * -1));
+      }
+      50% {
+        transform: scale(1.14) translate3d(calc(var(--float-x, 0px) * -0.5), calc(var(--float-y, 0px) * -0.6), 0) rotate(0deg);
+      }
+      100% {
+        transform: scale(1.1) translate3d(calc(var(--float-x, 0px) * 0.8), calc(var(--float-y, 0px) * 0.9), 0) rotate(var(--float-rot, 0deg));
+      }
     }
 
     @keyframes drift {
@@ -701,11 +717,19 @@
     }
 
     function buildCollage() {
-      collage.innerHTML = images.map((src) => `
-        <div class="tile">
-          <img src="${src}" alt="Enchanted memory" />
-        </div>
-      `).join('');
+      collage.innerHTML = images.map((src, index) => {
+        const movementX = ((Math.random() * 12) - 6).toFixed(2);
+        const movementY = ((Math.random() * 12) - 6).toFixed(2);
+        const rotation = ((Math.random() * 6) - 3).toFixed(2);
+        const duration = (7 + Math.random() * 6).toFixed(2);
+        const delay = (Math.random() * 2.5).toFixed(2);
+
+        return `
+          <div class="tile" style="--float-x:${movementX}px; --float-y:${movementY}px; --float-rot:${rotation}deg; --float-duration:${duration}s; --float-delay:${delay}s;">
+            <img src="${src}" alt="Enchanted memory" />
+          </div>
+        `;
+      }).join('');
     }
 
     function moveNoButton() {
